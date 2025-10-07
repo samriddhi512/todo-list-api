@@ -5,51 +5,69 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
   Post,
   Req,
   Res,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { TodosService } from './todos.service';
 import { Todo } from './entities/todo.entity';
-import type { Response, Request } from 'express';
+import { AuthGuard } from 'src/auth/auth.guard';
+import type { Request } from 'express';
+import { CreateTodoDto } from './dtos/createTodo.dto';
+import { UpdateTodoDto } from './dtos/updateTodo.dto';
 
 @Controller('todos')
+@UseGuards(AuthGuard)
 export class TodosController {
   constructor(private readonly todosService: TodosService) {}
 
   @Get()
-  async findAll(): Promise<Todo[]> {
-    return this.todosService.findAll();
+  async findAll(@Req() req): Promise<Todo[]> {
+    const userId = req.user.sub;
+    return this.todosService.findAllForUser(userId);
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Todo | null> {
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req,
+  ): Promise<Todo | null> {
     // @Param('id') → Extracts the id from the URL. id is a string can use parseIntPipe to convert it.
-    const customer = this.todosService.findOne(id);
-    if (customer) return customer;
-    else throw new HttpException('User not found!', HttpStatus.NOT_FOUND);
+    const userId = req.user.sub;
+    const result = this.todosService.findOneForUser(id, userId);
+    if (result) return result;
+    else throw new NotFoundException();
   }
 
   @Post()
-  async create(@Body() todoData: Partial<Todo>): Promise<Todo> {
+  @UsePipes(ValidationPipe)
+  async create(@Body() todoData: CreateTodoDto, @Req() req): Promise<Todo> {
     // @Body extracts request body
-    return this.todosService.create(todoData);
+    const userId = req.user.sub;
+    return this.todosService.createForUser(todoData, userId);
   }
 
   @Patch(':id')
   async update(
     @Param('id') id: string,
-    @Body() todoData: Partial<Todo>,
+    @Body() todoData: UpdateTodoDto,
+    @Req() req,
   ): Promise<Todo | null> {
-    return this.todosService.update(+id, todoData);
+    const userId = req.user.sub;
+    return this.todosService.updateForUser(+id, userId, todoData);
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string): Promise<void> {
-    return this.todosService.delete(+id);
+  async delete(@Param('id') id: string, @Req() req): Promise<void> {
+    const userId = req.user.sub;
+    return this.todosService.delete(+id, userId);
   }
 }
 

@@ -2,6 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Todo } from './entities/todo.entity';
 import { Repository } from 'typeorm';
+import { CreateTodoDto } from './dtos/createTodo.dto';
+import { UpdateTodoDto } from './dtos/updateTodo.dto';
 
 @Injectable()
 export class TodosService {
@@ -10,30 +12,45 @@ export class TodosService {
     private readonly todoRepo: Repository<Todo>,
   ) {}
 
-  async findAll(): Promise<Todo[]> {
+  async findAllForUser(userId: number): Promise<Todo[]> {
     // relations: 'user' = property name in the entity that defines the relationship.
     // TypeORM looks at the entity metadata, sees that Todo.user is a ManyToOne relation to User, and automatically generates a JOIN in the SQL.
     // It will join with the users table internally using the foreign key (user_id).
-    return this.todoRepo.find({ relations: ['user'] });
+    return this.todoRepo.find({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
   }
 
-  async findOne(id: number): Promise<Todo | null> {
-    return this.todoRepo.findOne({ where: { id }, relations: ['user'] });
+  async findOneForUser(id: number, userId: number): Promise<Todo | null> {
+    return this.todoRepo.findOne({
+      where: { id, user: { id: userId } },
+      relations: ['user'],
+    });
   }
 
-  async create(todoData: Partial<Todo>): Promise<Todo> {
-    const todo = this.todoRepo.create(todoData); // creates an entity instance
+  async createForUser(todoData: CreateTodoDto, userId: number): Promise<Todo> {
+    const todo = this.todoRepo.create({
+      ...todoData,
+      user: {
+        id: userId,
+      },
+    }); // creates an entity instance
     // console.log('todo', todo);
     return this.todoRepo.save(todo);
   }
 
-  async update(id: number, todoData: Partial<Todo>): Promise<Todo | null> {
-    await this.todoRepo.update(id, todoData);
-    return this.findOne(id);
+  async updateForUser(
+    id: number,
+    userId: number,
+    todoData: UpdateTodoDto,
+  ): Promise<Todo | null> {
+    await this.todoRepo.update({ id, user: { id: userId } }, todoData);
+    return this.findOneForUser(id, userId);
   }
 
-  async delete(id: number): Promise<void> {
-    await this.todoRepo.delete(id);
+  async delete(id: number, userId: number): Promise<void> {
+    await this.todoRepo.delete({ id, user: { id: userId } });
   }
 }
 

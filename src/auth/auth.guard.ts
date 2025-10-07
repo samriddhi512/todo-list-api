@@ -25,7 +25,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
 
-    return true;
+    return true; // indicates current request is allowed.
   }
 
   private extractTokenFromHeader(request: Request) {
@@ -37,3 +37,9 @@ export class AuthGuard implements CanActivate {
 // Note taken this from the official nest documentation
 
 // suppose ur jwt token payload was {sub: id, name: 'xyz'}. Then this is the payload when token is verified.
+// guards - decide whether a request will be handled by a route handler or not. - Authorisation.
+
+// this is handled by middleware in express, difference from guards:
+// middleware is 'dumb' does not know which handler is executed after it calls the next function.
+// but guards have access to the execution context.
+// Guards are executed after all middleware, but before any interceptor or pipe.

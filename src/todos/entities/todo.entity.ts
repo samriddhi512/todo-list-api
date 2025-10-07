@@ -6,12 +6,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-
-export enum TodoStatus {
-  PENDING = 'pending',
-  IN_PROGRESS = 'in_progress',
-  DONE = 'done',
-}
+import { TodoStatus } from '../enums/todoStatus.enum';
 
 @Entity('todos') // maps to todos table in the database
 export class Todo {

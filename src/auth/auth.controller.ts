@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { CreateUserDto } from 'src/users/dtos/createUser.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -19,5 +20,12 @@ export class AuthController {
   @HttpCode(HttpStatus.OK) // for success post nest auto sends 201, we want 200
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto.email, loginDto.password);
+  }
+
+  @Post('signup')
+  @UsePipes(ValidationPipe)
+  @HttpCode(HttpStatus.OK)
+  signup(@Body() createUserDto: CreateUserDto) {
+    return this.authService.signup(createUserDto);
   }
 }

@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Todo } from './todos/entities/todo.entity';
 import { User } from './users/entities/user.entity';
 import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ConfigModule } from '@nestjs/config';
     }),
     UsersModule,
     TodosModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

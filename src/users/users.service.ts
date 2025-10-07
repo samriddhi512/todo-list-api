@@ -21,6 +21,10 @@ export class UsersService {
     return this.userRepo.findOne({ where: { id } });
   }
 
+  async findOneByEmail(email: string): Promise<User | null> {
+    return this.userRepo.findOne({ where: { email } });
+  }
+
   async create(userData: CreateUserDto): Promise<User> {
     const password = await encodePassword(userData.password);
     const newUser = {
